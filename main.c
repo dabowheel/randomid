@@ -50,6 +50,22 @@ void cmDestroy(charmap map)
     free(map);
 }
 
+charmap Create16CharMap()
+{
+    charmap map = cmCreate(16);
+    int i = 0;
+
+    for (int j = 0; j < 10; j++, i++) {
+        map->map[i] = j + '0';
+    }
+
+    for (int j = 0; j < 6; j++, i++) {
+        map->map[i] = j + 'A';
+    }
+
+    return map;
+}
+
 charmap Create62CharMap()
 {
     charmap map = cmCreate(62);
@@ -65,6 +81,18 @@ charmap Create62CharMap()
 
     for (int j = 0; j < 26; j++, i++) {
         map->map[i] = j + 'A';
+    }
+
+    return map;
+}
+
+charmap Create94CharMap()
+{
+    charmap map = cmCreate(94);
+    int i = 0;
+
+    for (int j = 33; j <= 126; j++, i++) {
+        map->map[i] = j;
     }
 
     return map;
@@ -98,6 +126,14 @@ void bytes2mpz(a_string s, mpz_t n)
         mpz_add(n, n, single);
         place++;
     }
+}
+
+void cmPrint(charmap map)
+{
+    for (int i = 0; i < map->size; i++) {
+        printf("%c ", map->map[i]);
+    }
+    printf("\n");
 }
 
 rlink convert(mpz_t n, unsigned int base)
@@ -165,17 +201,37 @@ int main(int argc, char *argv[])
 
     mpz_init(n);
     bytes2mpz(s, n);
-    gmp_printf("%Zu\n", n);
+    gmp_printf("num10 = %Zu\n", n);
 
-    map = Create62CharMap(62);
+    /* base 16 */
+    map = Create16CharMap();
+    cmPrint(map);
     head = convert(n, map->size);    
     rlPrint(head);
-
     num = FormatNumber(head, map);
-    printf("num = %s\n", num->data);
-
+    printf("num16 = %s\n", num->data);
     cmDestroy(map);
-    a_sdestroy(s);
     a_sdestroy(num);
+
+    /* base 62 */
+    map = Create62CharMap();
+    cmPrint(map);
+    head = convert(n, map->size);    
+    rlPrint(head);
+    num = FormatNumber(head, map);
+    printf("num62 = %s\n", num->data);
+    cmDestroy(map);
+    a_sdestroy(num);
+
+    /* base 94 */
+    map = Create94CharMap();
+    cmPrint(map);
+    head = convert(n, map->size);
+    num = FormatNumber(head, map);
+    printf("num94 = %s\n", num->data);
+    cmDestroy(map);
+    a_sdestroy(num);
+
+    a_sdestroy(s);
     return 0;
 }
