@@ -1,7 +1,7 @@
 CFLAGS = -Wall -pedantic -s -g
-convert: main.o
-	gcc -o convert main.o -lgmp -laqua -lcrypto
+randomid: main.o
+	gcc -o randomid main.o -lgmp -laqua -lcrypto
 %.o: %.c
 	gcc -c $< $(CFLAGS)
 clean:
-	rm -f convert main.o
+	rm -f randomid main.o
