@@ -29,6 +29,47 @@ void rlPrint(rlink head)
     printf("\n");
 }
 
+typedef struct charmap {
+    unsigned int size;
+    char *map;
+} *charmap;
+
+charmap cmCreate(unsigned int size)
+{
+    charmap map;
+
+    map = a_malloc(sizeof(struct charmap));
+    map->size = size;
+    map->map = a_malloc(size);
+    return map;
+}
+
+void cmDestroy(charmap map)
+{
+    free(map->map);
+    free(map);
+}
+
+charmap Create62CharMap()
+{
+    charmap map = cmCreate(62);
+    int i = 0;
+
+    for (int j = 0; j < 10; j++, i++) {
+        map->map[i] = j + '0';
+    }
+
+    for (int j = 0; j < 26; j++, i++) {
+        map->map[i] = j + 'a';
+    }
+
+    for (int j = 0; j < 26; j++, i++) {
+        map->map[i] = j + 'A';
+    }
+
+    return map;
+}
+
 a_string GetRandomBytes(unsigned int size)
 {
     a_string_builder b = a_sbldcreate();
@@ -81,12 +122,25 @@ rlink convert(mpz_t n, unsigned int base)
     return head;
 }
 
+a_string FormatNumber(rlink head, charmap map)
+{
+    a_string_builder b = a_sbldcreate();
+
+    for (rlink l = head; l; l = l->next) {
+        a_sbldaddchar(b, map->map[l->r]);
+    }
+
+    return a_sbld2s(b);
+}
+
 int main(int argc, char *argv[])
 {
     a_string s;
     mpz_t n;
     int size;
     rlink head;
+    charmap map;
+    a_string num;
 
     const char usage[] = "Usage: convert <size>\n";
     if (argc != 2) {
@@ -112,9 +166,16 @@ int main(int argc, char *argv[])
     mpz_init(n);
     bytes2mpz(s, n);
     gmp_printf("%Zu\n", n);
-    head = convert(n, 62);
+
+    map = Create62CharMap(62);
+    head = convert(n, map->size);    
     rlPrint(head);
 
+    num = FormatNumber(head, map);
+    printf("num = %s\n", num->data);
+
+    cmDestroy(map);
     a_sdestroy(s);
+    a_sdestroy(num);
     return 0;
 }
