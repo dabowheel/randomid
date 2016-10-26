@@ -4,15 +4,17 @@
 
 int main(int argc, char *argv[])
 {
-    a_string s;
-    mpz_t n;
     int size;
-    rlink head;
+    int base;
     charmap map;
     a_string num;
+    a_string error;
 
-    const char usage[] = "Usage: convert <size>\n";
-    if (argc != 2) {
+    const char usage[] = "Usage: randomid <size> <base>\n"
+        " size is the number of random bytes to generate; it must be a positive integer.\n"
+        " base must be 10, 16, 62, or 94.\n";
+
+    if (argc != 3) {
         fprintf(stderr, usage);
         return 1;
     }
@@ -23,48 +25,35 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    s = GetRandomBytes(size);
-    if (!s) {
-        fprintf(stderr, "Could not get random bytes\n");
+    base = atoi(argv[2]);
+    switch (base) {
+        case 10:
+            map = Create10CharMap();
+            break;
+        case 16:
+            map = Create16CharMap();
+            break;
+        case 62:
+            map = Create62CharMap();
+            break;
+        case 94:
+            map = Create94CharMap();
+            break;
+        default:
+            fprintf(stderr, "base must be 10, 16, 62 or 94\n");
+            return 1;
+    }
+
+    num = randomID(size, map, &error);
+    if (!num) {
+        fprintf(stderr, "%s\n", error->data);
+        a_sdestroy(error);
         return 1;
     }
-    for (int i = 0; i < s->len; i++)
-        printf("%u ", (unsigned char)s->data[i]);
-    printf("\n");
+    printf("%s\n", num->data);
 
-    mpz_init(n);
-    bytes2mpz(s, n);
-    gmp_printf("num10 = %Zu\n", n);
-
-    /* base 16 */
-    map = Create16CharMap();
-    cmPrint(map);
-    head = convert(n, map->size);    
-    rlPrint(head);
-    num = FormatNumber(head, map);
-    printf("num16 = %s\n", num->data);
     cmDestroy(map);
     a_sdestroy(num);
 
-    /* base 62 */
-    map = Create62CharMap();
-    cmPrint(map);
-    head = convert(n, map->size);    
-    rlPrint(head);
-    num = FormatNumber(head, map);
-    printf("num62 = %s\n", num->data);
-    cmDestroy(map);
-    a_sdestroy(num);
-
-    /* base 94 */
-    map = Create94CharMap();
-    cmPrint(map);
-    head = convert(n, map->size);
-    num = FormatNumber(head, map);
-    printf("num94 = %s\n", num->data);
-    cmDestroy(map);
-    a_sdestroy(num);
-
-    a_sdestroy(s);
     return 0;
 }

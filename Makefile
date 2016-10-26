@@ -4,6 +4,7 @@ CFLAGS = -Wall -pedantic -s -fPIC -g
 LDFLAGS = -lgmp -laqua -lcrypto
 link_version = 0.1
 version = $(link_version).1
+install_dir = /usr/local
 
 debug: target = debug
 debug:
@@ -20,3 +21,8 @@ librandomid.so: randomid.o
 
 clean:
 	rm -rf build
+
+install:
+	cp -f lib/*.h $(instal_dir)/include
+	cp -f build/lib/librandomid.so.$(link_version) $(install_dir)/lib
+	cd $(install_dir)/lib; ln -sf librandomid.so.$(link_version) librandomid.so

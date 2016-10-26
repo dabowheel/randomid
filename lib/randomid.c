@@ -25,6 +25,14 @@ void rlPrint(rlink head)
     printf("\n");
 }
 
+void rlDestroy(rlink head)
+{
+    for (rlink l = head; l;) {
+        rlink next = l->next;
+        free(l);
+        l = next;
+    }
+}
 
 charmap cmCreate(unsigned int size)
 {
@@ -40,6 +48,17 @@ void cmDestroy(charmap map)
 {
     free(map->map);
     free(map);
+}
+
+charmap Create10CharMap()
+{
+    charmap map = cmCreate(10);
+    
+    for (int i = 0; i < 10; i++) {
+        map->map[i] = i + '0';
+    }
+
+    return map;
 }
 
 charmap Create16CharMap()
@@ -161,3 +180,33 @@ a_string FormatNumber(rlink head, charmap map)
     return a_sbld2s(b);
 }
 
+
+/*
+    size is number of random bytes
+    map is the character mapping
+    error if there is an error
+    return NULL and an error if there is an error
+    otherwise, return the number in a string
+*/
+a_string randomID(unsigned int size, charmap map, a_string *errorptr)
+{
+    mpz_t n;
+    rlink head = NULL;
+    a_string s;
+    a_string num;
+
+    s = GetRandomBytes(size);
+    if (!s) {
+        *errorptr = a_cstr2s("Could not get random bytes");
+        a_sdestroy(s);
+        return NULL;
+    }
+    mpz_init(n);
+    bytes2mpz(s, n);
+    head = convert(n, map->size);
+    num = FormatNumber(head, map);
+    a_sdestroy(s);
+    rlDestroy(head);
+
+    return num;
+}
