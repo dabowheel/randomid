@@ -1,3 +1,5 @@
+#include <gmp.h>
+
 typedef struct rlink {
     unsigned int r;
     struct rlink *next;

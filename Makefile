@@ -23,6 +23,6 @@ clean:
 	rm -rf build
 
 install:
-	cp -f lib/*.h $(instal_dir)/include
+	cp -f lib/*.h $(install_dir)/include
 	cp -f build/lib/librandomid.so.$(link_version) $(install_dir)/lib
 	cd $(install_dir)/lib; ln -sf librandomid.so.$(link_version) librandomid.so
